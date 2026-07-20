@@ -172,8 +172,6 @@ func TestClockInFlow(t *testing.T) {
 	}
 }
 
-// Additional tests for better coverage
-
 func TestGetEmployeeByID(t *testing.T) {
 	db := setupDB(t)
 
@@ -312,5 +310,45 @@ func TestUpdateEmployee(t *testing.T) {
 	}
 	if updated.Role != "Senior Developer" {
 		t.Fatalf("expected role Senior Developer, got %s", updated.Role)
+	}
+}
+
+func TestUpdateEmployeeWithInvalidName(t *testing.T) {
+	db := setupDB(t)
+
+	employee, err := database.InsertEmployee(db, "John", "Developer")
+	if err != nil {
+		t.Fatalf("insert employee: %v", err)
+	}
+
+	newEmployee := model.Employee{
+		ID:   employee.ID,
+		Name: "",
+		Role: "Senior Developer",
+	}
+
+	err = database.UpdateEmployee(db, &newEmployee)
+	if err == nil {
+		t.Fatalf("expected an error during the update")
+	}
+}
+
+func TestUpdateEmployeeWithInvalidRole(t *testing.T) {
+	db := setupDB(t)
+
+	employee, err := database.InsertEmployee(db, "John", "Developer")
+	if err != nil {
+		t.Fatalf("insert employee: %v", err)
+	}
+
+	newEmployee := model.Employee{
+		ID:   employee.ID,
+		Name: "John Updated",
+		Role: "",
+	}
+
+	err = database.UpdateEmployee(db, &newEmployee)
+	if err == nil {
+		t.Fatalf("expected an error during the update")
 	}
 }

@@ -3,6 +3,8 @@ package database
 import (
 	"ClockOut/internal/model"
 	"database/sql"
+	"fmt"
+	"strings"
 )
 
 // Makes the scan over an Employees sql query
@@ -56,4 +58,23 @@ func scanClockIn(rows *sql.Rows) ([]*model.ClockIn, error) {
 	}
 
 	return clockIns, nil
+}
+
+// Return an error if the given name is not valid
+func validateEmployeeName(name string) error {
+	if strings.TrimSpace(name) == "" {
+		return fmt.Errorf("Empty string is not a valid name")
+	}
+	return nil
+}
+
+// Return an error if the given role is not valid
+//
+// This is just a very basic role checkin, in the future maybe I will
+// add a valid role list or something like that
+func validateEmployeeRole(role string) error {
+	if strings.TrimSpace(role) == "" {
+		return fmt.Errorf("Empty string is not a valid role")
+	}
+	return nil
 }

@@ -3,20 +3,19 @@ package database
 import (
 	"ClockOut/internal/model"
 	"database/sql"
-	"fmt"
-	"strings"
 	"time"
 )
 
+// Create a new employee entry with the given name and role
 func InsertEmployee(db *sql.DB, name, role string) (*model.Employee, error) {
 	now := time.Now()
 
-	if strings.TrimSpace(name) == "" {
-		return nil, fmt.Errorf("Invalid name")
+	if err := validateEmployeeName(name); err != nil {
+		return nil, err
 	}
 
-	if strings.TrimSpace(role) == "" {
-		return nil, fmt.Errorf("Invalid role")
+	if err := validateEmployeeRole(role); err != nil {
+		return nil, err
 	}
 
 	result, err := db.Exec(`
@@ -183,7 +182,18 @@ func DeleteEmployee(db *sql.DB, id int64) error {
 	return nil
 }
 
+// Update the given employee object
+// !IMPORTANT: The only reference field is the id, it will modify
+// the employee that matches with the ID, al the other fields can
+// freely changed
 func UpdateEmployee(db *sql.DB, employee *model.Employee) error {
+	if err := validateEmployeeName(employee.Name); err != nil {
+		return err
+	}
+	if err := validateEmployeeRole(employee.Role); err != nil {
+		return err
+	}
+
 	result, err := db.Exec(`
 		UPDATE employee
 		SET
