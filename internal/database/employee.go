@@ -3,11 +3,21 @@ package database
 import (
 	"ClockOut/internal/model"
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 )
 
 func InsertEmployee(db *sql.DB, name, role string) (*model.Employee, error) {
 	now := time.Now()
+
+	if strings.TrimSpace(name) == "" {
+		return nil, fmt.Errorf("Invalid name")
+	}
+
+	if strings.TrimSpace(role) == "" {
+		return nil, fmt.Errorf("Invalid role")
+	}
 
 	result, err := db.Exec(`
 		INSERT INTO employee (
@@ -83,4 +93,122 @@ func CheckEmployeeExists(db *sql.DB, id int64) (bool, error) {
 	}
 
 	return exists, nil
+}
+
+// Return the employee with the given ID
+func GetEmployeeByID(db *sql.DB, id int64) (*model.Employee, error) {
+	var employee model.Employee
+
+	err := db.QueryRow(` 
+		SELECT 
+			id, 
+			name,
+			role
+		FROM employee
+		WHERE id = ? 
+	`, id).Scan(
+		&employee.ID,
+		&employee.Name,
+		&employee.Role,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return &employee, err
+}
+
+// Return the first `limit` employees (if limit = -1 then return all of them)
+// skipping the first `offset` ones
+func GetAllEmployees(db *sql.DB, offset, limit int) ([]*model.Employee, error) {
+	if limit <= 0 {
+		limit = -1 // Sin límite en SQLite
+	}
+
+	rows, err := db.Query(`
+		SELECT
+			id,
+			name,
+			role
+		FROM employee
+		ORDER BY created_at DESC
+		LIMIT ?
+		OFFSET ?
+	`, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var employees []*model.Employee
+
+	for rows.Next() {
+		var e model.Employee
+
+		err := rows.Scan(
+			&e.ID,
+			&e.Name,
+			&e.Role,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		employees = append(employees, &e)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return employees, nil
+}
+
+// Delete the given employee from the Database
+func DeleteEmployee(db *sql.DB, id int64) error {
+	rows, err := db.Exec(`
+		DELETE
+			FROM employee
+			WHERE id = ? 
+	`, id)
+
+	if err != nil {
+		return err
+	}
+
+	if affected, err := rows.RowsAffected(); affected == 0 || err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateEmployee(db *sql.DB, employee *model.Employee) error {
+	result, err := db.Exec(`
+		UPDATE employee
+		SET
+			name = ?,
+			role = ?,
+			updated_at = ?
+		WHERE id = ?
+	`,
+		employee.Name,
+		employee.Role,
+		time.Now(),
+		employee.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

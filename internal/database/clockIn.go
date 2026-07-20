@@ -75,25 +75,44 @@ func GetAllClockIn(db *sql.DB, offset, limit int) ([]*model.ClockIn, error) {
 
 	defer rows.Close()
 
-	var clockIns []*model.ClockIn
+	clockIns, err := scanClockIn(rows)
 
-	for rows.Next() {
-		var c model.ClockIn
-
-		err := rows.Scan(
-			&c.ID,
-			&c.EmployeeId,
-			&c.Timestamp,
-			&c.Type,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		clockIns = append(clockIns, &c)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := rows.Err(); err != nil {
+	return clockIns, nil
+}
+
+// Get the last `limit` clock_in entries for a given employee (if
+// limit = -1 return all of them) skipping the last 'offset  ones
+func GetClockInsByEmployee(db *sql.DB, employeeId int64, offset int, limit int) ([]*model.ClockIn, error) {
+	if limit <= 0 {
+		limit = -1
+	}
+
+	rows, err := db.Query(`
+		SELECT
+			id,
+			employee_id,
+			timestamp,
+			type
+		FROM clock_in
+		WHERE employee_id = ?
+		ORDER BY created_at DESC
+		LIMIT ?
+		OFFSET ?
+	`, employeeId, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	clockIns, err := scanClockIn(rows)
+
+	if err != nil {
 		return nil, err
 	}
 
