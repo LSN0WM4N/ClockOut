@@ -122,7 +122,7 @@ func GetEmployeeByID(db *sql.DB, id int64) (*model.Employee, error) {
 // skipping the first `offset` ones
 func GetAllEmployees(db *sql.DB, offset, limit int) ([]*model.Employee, error) {
 	if limit <= 0 {
-		limit = -1 // Sin límite en SQLite
+		limit = -1
 	}
 
 	rows, err := db.Query(`
