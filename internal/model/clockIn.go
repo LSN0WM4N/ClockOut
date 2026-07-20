@@ -11,7 +11,7 @@ const (
 
 type ClockIn struct {
 	ID         int64
-	EmployeeId string
+	EmployeeId int64
 	Timestamp  time.Time
 	Type       Type
 }

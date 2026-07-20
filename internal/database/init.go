@@ -18,7 +18,7 @@ func Init(db *sql.DB) error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			employee_id INTEGER NOT NULL,
 			timestamp DATETIME NOT NULL,
-			type TEXT NOT NULL CHECK(type IN ('entry', 'exit')),
+			type TEXT NOT NULL CHECK(type IN ('start', 'finish')),
 
 			created_at DATETIME NOT NULL,
 			updated_at DATETIME NOT NULL,

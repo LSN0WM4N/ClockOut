@@ -3,7 +3,6 @@ package database
 import (
 	"ClockOut/internal/model"
 	"database/sql"
-	"strconv"
 	"time"
 )
 
@@ -33,15 +32,16 @@ func InsertEmployee(db *sql.DB, name, role string) (*model.Employee, error) {
 	}
 
 	return &model.Employee{
-		ID:   strconv.FormatInt(id, 10),
+		ID:   id,
 		Name: name,
 		Role: role,
 	}, nil
 }
 
 // Return if the employee is working (last operation was a clock in [start])
-// or if is resting (last operation was a clock out [finish])
-func CheckEmployeeStatus(db *sql.DB, id int64) (*model.Type, error) {
+// or if is resting (last operation was a clock out [finish]) and a boolean
+// that indicates that there are no entries for that employee
+func CheckEmployeeStatus(db *sql.DB, id int64) (model.Type, bool, error) {
 	var status model.Type
 
 	err := db.QueryRow(`
@@ -57,12 +57,12 @@ func CheckEmployeeStatus(db *sql.DB, id int64) (*model.Type, error) {
 		// take the next assignation as Clock Out
 		if err == sql.ErrNoRows {
 			status = model.Finish
-			return &status, nil
+			return model.Finish, false, nil
 		}
-		return nil, err
+		return model.Finish, false, err
 	}
 
-	return &status, nil
+	return status, true, nil
 }
 
 // Return True or False if the queried employee exists or not
