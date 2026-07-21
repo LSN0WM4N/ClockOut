@@ -4,7 +4,31 @@ Planned to be an OpenSource solution for small business that have no to pay
 for a super massive software in order to control clock in/clock out.
 
 ### Project Status
-Planning and scaffolding 
+Basic Core development
+
+Next steps...
+
+Create the handlers and listeners for system events.
+I have in mind an http based connection restricted to localhost.
+
+The main plan is separate the project into pieces that make their own 
+function without knowing what the other piece do.
+
+```
+[client] <---> [listener <--channels--> dispatcher] <---> [core]
+```
+
+Update: 
+I have no more time for today :(
+
+```
+TODOS:
+  Add endpoints for CRUD employees
+  Make the dispatcher able to accept more handlers
+  Think a little bit more about the organization (is getting a little messy)
+  
+  Drink more water
+```
 
 ### Principal Features in mind
 
