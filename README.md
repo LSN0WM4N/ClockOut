@@ -18,13 +18,9 @@ function without knowing what the other piece do.
 [client] <---> [listener <--channels--> dispatcher] <---> [core]
 ```
 
-Update: 
-I have no more time for today :(
-
 ```
 TODOS:
   Add endpoints for CRUD employees
-  Make the dispatcher able to accept more handlers
   Think a little bit more about the organization (is getting a little messy)
   
   Drink more water
