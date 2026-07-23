@@ -1,12 +1,13 @@
 package listener
 
 import (
+	"ClockOut/internal/core"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-func newEventHandler(eventsCh chan<- string) http.HandlerFunc {
+func newEventHandler(eventsCh chan<- core.Event) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed, use POST", http.StatusMethodNotAllowed)
@@ -26,7 +27,10 @@ func newEventHandler(eventsCh chan<- string) http.HandlerFunc {
 			return
 		}
 
-		eventsCh <- payload.ID
+		eventsCh <- core.Event{
+			Type:    "event",
+			Payload: payload.ID,
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)

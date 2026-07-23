@@ -4,10 +4,11 @@ import (
 	"net/http"
 
 	"ClockOut/internal/constants"
+	"ClockOut/internal/core"
 	"ClockOut/internal/logger"
 )
 
-func Init(eventsCh chan<- string) error {
+func Init(eventsCh chan<- core.Event) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/event", newEventHandler(eventsCh))
 
