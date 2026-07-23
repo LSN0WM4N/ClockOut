@@ -31,7 +31,8 @@ func (d *Dispatcher[T]) Start() {
 }
 
 func (d *Dispatcher[T]) RegisterHandler(s string, handler func(T)) {
-	if d.handlers[s] != nil {
+	_, exists := d.GetHandler(s)
+	if !exists {
 		logger.Debug("Dispatcher", "Overwriting handler for event %s", s)
 	}
 
@@ -41,6 +42,13 @@ func (d *Dispatcher[T]) RegisterHandler(s string, handler func(T)) {
 
 func (d *Dispatcher[T]) Stop() {
 	close(d.done)
+}
+
+// To test
+
+func (d *Dispatcher[T]) GetHandler(s string) (func(T), bool) {
+	handler, ok := d.handlers[s]
+	return handler, ok
 }
 
 // Private
@@ -55,7 +63,7 @@ func (d *Dispatcher[T]) safeInvoke(item T) {
 			logger.Print("dispatcher", "recovered from panic en handler: ", fmt.Sprint(r))
 		}
 	}()
-	handler, ok := d.handlers[event]
+	handler, ok := d.GetHandler(event)
 	if !ok || handler == nil {
 		logger.Print("dispatcher", "no handler registered for event ", event)
 		return
